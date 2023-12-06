@@ -1,0 +1,57 @@
+#include <DHT.h>
+#include <LiquidCrystal_I2C.h>
+#include <Wire.h>
+
+#define DHTPIN A0     // pin yang terhubung ke output DHT22
+#define DHTTYPE DHT22   // jenis sensor, DHT22
+DHT dht(DHTPIN, DHTTYPE);
+
+LiquidCrystal_I2C lcd(0x27,16,2); // alamat LCD 0x27 untuk display 16 karakter dan 2 baris
+int relayPin = 4; // pin untuk mengontrol relay
+
+int h;  // menyimpan nilai kelembaban
+int t; // menyimpan nilai suhu
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("Temperature and Humidity Sensor Test");
+  dht.begin();
+  lcd.init(); // inisialisasi LCD
+  lcd.backlight(); // nyalakan backlight LCD
+  pinMode(relayPin, OUTPUT); // inisialisasi pin relay sebagai output
+}
+
+void loop() {
+  h = dht.readHumidity(); // baca nilai kelembaban
+  t = dht.readTemperature(); // baca nilai suhu
+  
+  Serial.print("Humidity: ");
+  Serial.print(h);
+  Serial.print(" %, Temp: ");
+  Serial.print(t);
+  Serial.println(" ° Celsius");
+      
+  lcd.setCursor(0, 0);
+  lcd.println(" Now Temperature ");
+  
+  lcd.setCursor(2, 1);
+  lcd.print("T:");
+  lcd.print(t);
+  lcd.print("C");
+
+ 
+   
+  lcd.setCursor(9, 1);
+  lcd.print("H:");
+  lcd.print(h);
+  lcd.print("%");
+  
+  // kontrol relay
+  if (t > 35) {
+    digitalWrite(relayPin, HIGH); // matikan relay jika suhu melebihi 30°C
+  } else if (t < 30 ) {
+    digitalWrite(relayPin, LOW); // nyalakan relay jika suhu tidak melebihi 30°C
+  }
+  
+  delay(1000); // delay 1 detik
+}
